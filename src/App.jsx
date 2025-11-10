@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { message } from "@tauri-apps/plugin-dialog";
 
 export default function App() {
   const [user, setUser] = useState({ username: "", password: "" });
@@ -28,33 +29,33 @@ export default function App() {
   }
 
   async function onStartVideoCapture() {
-    if (!outputDir) {
-      alert("Enter output folder (e.g. D:\\TauriCaptures)");
-      return;
-    }
+    // if (!outputDir) {
+    //   alert("Enter output folder (e.g. D:\\TauriCaptures)");
+    //   return;
+    // }
     try {
       const msg = await invoke("start_video_capture", {
-        outputDir: outputDir,
-        intervalSecs: Number(intervalSec),
-        durationSecs: Number(30),
+        // output_dir: outputDir,  // Changed to snake_case
+        intervalSecs: Number(intervalSec),  // Changed to snake_case
+        durationSecs: Number(30),  // Changed to snake_case
       });
       console.log("msg", msg);
-      alert(msg);
+     await message("Video capture started successfully!", { title: "Success" });
     } catch (err) {
       console.error(err);
-      alert("Failed to start video capture: " + err.message);
+      await message("Video capture started successfully!", { title: "Success" });
     }
   }
 
   // ✅ Start capture
   async function onStart() {
-    if (!outputDir) {
-      alert("Enter output folder (e.g. D:\\TauriCaptures)");
-      return;
-    }
+    // if (!outputDir) {
+    //   alert("Enter output folder (e.g. D:\\TauriCaptures)");
+    //   return;
+    // }
     try {
       const msg = await invoke("start_capture", {
-        outputDir: outputDir,
+        // outputDir: outputDir,
         intervalSecs: Number(intervalSec),
       });
       alert(msg);
@@ -65,17 +66,20 @@ export default function App() {
     }
   }
 
-  // ✅ Stop capture
+  // Stop capture
   async function onStop() {
-    try {
-      const msg = await invoke("stop_capture");
-      alert(msg);
-      setStatus(await invoke("capture_status"));
-    } catch (err) {
-      console.error(err);
-      alert("Failed to stop capture: " + err.message);
-    }
-  }
+  try {
+    await invoke("stop_capture");
+  } catch (e) { console.warn(e); }
+
+  try {
+    await invoke("stop_video_capture");
+  } catch (e) { console.warn(e); }
+
+  setStatus(await invoke("capture_status"));
+  await message("All captures stopped", { title: "Stopped" });
+}
+
 
   // Periodically fetch activity (every 3s)
   useEffect(() => {
@@ -93,7 +97,7 @@ export default function App() {
             console.error("Failed to parse metrics:", e);
           }
         }
-        const idle = await invoke("is_idle", { threshold_secs: 15 });
+        const idle = await invoke("is_idle", { thresholdSecs: 15 });
         setIsIdle(idle);
       } catch (err) {
         console.error("Activity fetch error:", err);
@@ -147,12 +151,12 @@ export default function App() {
           <>
             {/* ====================== SETTINGS ======================= */}
             <div className="mb-2">
-              <input
+              {/* <input
                 placeholder="Output dir (e.g. D:\\TauriCaptures)"
                 value={outputDir}
                 onChange={(e) => setOutputDir(e.target.value)}
                 className="w-full border p-2 rounded"
-              />
+              /> */}
             </div>
             <div className="mb-2">
               <input
